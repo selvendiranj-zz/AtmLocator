@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace AtmLocator.Fass
 {
@@ -30,7 +32,9 @@ namespace AtmLocator.Fass
                 return new BadRequestObjectResult("Please pass a city name {name} on the query string or in the request body");
             }
 
-            string atms = File.ReadAllText("allATM.json");
+            //string atms = File.ReadAllText("allATM.json");
+            string atms = GetResponseString("https://www.ing.nl/api/locator/atms/").Result;
+            atms = atms.Substring(5, atms.Length - 5);
             var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
             var atmsByCity = allAtms.Where(l => l.Address.City.Equals(name, StringComparison.InvariantCultureIgnoreCase));
             var atmsSmpl = atmsByCity.Select(a => new AtmSimplified()
@@ -49,6 +53,20 @@ namespace AtmLocator.Fass
             {
                 return new BadRequestObjectResult("no ATM locations found for the city");
             }
+        }
+
+        private static async Task<string> GetResponseString(string url)
+        {
+            var httpClient = new HttpClient();
+
+            //var parameters = new Dictionary<string, string>();
+            //parameters["text"] = text;
+
+            //var response = await httpClient.PostAsync(url, new FormUrlEncodedContent(parameters));
+            var response = await httpClient.GetAsync(url);
+            var contents = await response.Content.ReadAsStringAsync();
+
+            return contents;
         }
     }
 }

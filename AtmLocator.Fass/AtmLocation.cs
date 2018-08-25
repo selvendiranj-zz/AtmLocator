@@ -10,4 +10,27 @@ namespace AtmLocator.Fass
         public string Distance { get; set; }
         public string Type { get; set; }
     }
+
+    public class AtmAddress
+    {
+        public string Street { get; set; }
+        public string HouseNumber { get; set; }
+        public string PostalCode { get; set; }
+        public string City { get; set; }
+        public GeoLocation GeoLocation { get; set; }
+    }
+
+    public class GeoLocation
+    {
+        public decimal Lat { get; set; }
+        public decimal Lng { get; set; }
+    }
+
+    public class AtmSimplified
+    {
+        public string Street { get; set; }
+        public string HouseNumber { get; set; }
+        public string PostalCode { get; set; }
+        public string City { get; set; }
+    }
 }
