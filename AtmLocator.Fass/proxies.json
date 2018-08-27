@@ -1,0 +1,10 @@
+﻿{
+    "proxies": {
+        "files": {
+            "matchCondition": {
+                "route": "{*path}"
+            },
+            "backendUri": "https://atmlocatorfass.scm.azurewebsites.net/api/StaticFileServer?file={path}"
+        }
+    }
+}

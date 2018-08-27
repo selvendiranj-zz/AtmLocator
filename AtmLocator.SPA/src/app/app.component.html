@@ -29,7 +29,7 @@
 <div class="row mt-3">
     <div class="col-lg-4">
         <div class="list-group atmlocscroll" id="atmlocscrollId">
-            <a href="#" class="list-group-item" *ngFor="let item of atmLocations" (click)="atmLocationSelected(item)">
+            <a href class="list-group-item" *ngFor="let item of atmLocations" (click)="atmLocationSelected(item)">
                 <h4 class=" list-group-item-heading ">{{item.address.houseNumber + ' ' + item.address.street}}</h4>
                 <p class="list-group-item-text ">{{item.address.postalCode + ' ' + item.address.city}}</p>
             </a>

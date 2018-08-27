@@ -16,10 +16,10 @@ namespace AtmLocator.Fass
     public static class AtmLocator
     {
         [FunctionName("AtmLocator")]
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log)
+        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req, ILogger log)
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK);
-            var stream = new FileStream(@"d:\home\site\wwwroot\ShoppingList\index.html", FileMode.Open);
+            var stream = new FileStream(@"D:\home\site\wwwroot\wwwroot\index.html", FileMode.Open);
             response.Content = new StreamContent(stream);
             response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
             return response;

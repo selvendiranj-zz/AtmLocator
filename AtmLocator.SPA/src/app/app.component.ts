@@ -10,7 +10,7 @@ import { AtmLocation } from './AtmLocation';
 export class AppComponent implements AfterViewInit
 {
     title = 'atm-locator';
-    atmLocatorUrl = 'https://atmlocatorfass.azurewebsites.net/api/GetAtmsAllRaw?code=QtaMYOQBOCuLK13cIGGD1KxnIKBUEPJdJcgO7HGktmnoaWOhf2SGHA==';
+    atmLocatorUrl = 'https://atmlocatorfass.azurewebsites.net/api/GetAtmsAllRaw';
     atmLocsConst: any;
     atmLocations: any;
     atmLocation: any;
