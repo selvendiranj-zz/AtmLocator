@@ -4,7 +4,7 @@
             "matchCondition": {
                 "route": "{*path}"
             },
-            "backendUri": "https://atmlocatorfass.scm.azurewebsites.net/api/StaticFileServer?file={path}"
+            "backendUri": "https://atmlocatorfunctionapp.scm.azurewebsites.net/api/StaticFileServer?file={path}"
         }
     }
 }
