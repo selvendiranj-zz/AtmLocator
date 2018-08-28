@@ -45,6 +45,9 @@
         <None Update="wwwroot\main.463ef2183b5228641d90.js">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="wwwroot\main.6ac6480ec3517896b265.js">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="wwwroot\main.a6d3ddc5263bb38a35ec.js">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
