@@ -20,53 +20,50 @@ namespace AtmLocator.Fass
         [FunctionName("GetAtmsByCity")]
         public static IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req, ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            string name = req.Query["name"];
-
-            string requestBody = new StreamReader(req.Body).ReadToEnd();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-            if (name == null)
+            try
             {
-                return new BadRequestObjectResult("Please pass a city name {name} on the query string or in the request body");
+                log.LogInformation("C# HTTP trigger function processed a request.");
+
+                string name = req.Query["name"];
+
+                string requestBody = new StreamReader(req.Body).ReadToEnd();
+                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                name = name ?? data?.name;
+                if (name == null)
+                {
+                    return new BadRequestObjectResult("Please pass a city name {name} on the query string or in the request body");
+                }
+
+                // pass empty staticFilesDir to access files from app root
+                string filePath = FileHelper.GetFilePath("", "allAtms.json", log);
+                log.LogInformation("filePath: " + filePath);
+                FileStream stream = new FileStream(filePath, FileMode.Open);
+                string atms = new StreamReader(stream).ReadToEnd();
+                var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
+                var atmsByCity = allAtms.Where(l => l.Address.City.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                var atmsSmpl = atmsByCity.Select(a => new AtmSimplified()
+                {
+                    HouseNumber = a.Address.HouseNumber,
+                    Street = a.Address.Street,
+                    City = a.Address.City,
+                    PostalCode = a.Address.PostalCode
+                });
+
+                if (atms != null)
+                {
+                    return (ActionResult)new OkObjectResult(atmsSmpl);
+                }
+                else
+                {
+                    return new BadRequestObjectResult("no ATM locations found for the city");
+                }
             }
-
-            //string atms = File.ReadAllText("allATM.json");
-            string atms = GetResponseString("https://www.ing.nl/api/locator/atms/").Result;
-            atms = atms.Substring(5, atms.Length - 5);
-            var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
-            var atmsByCity = allAtms.Where(l => l.Address.City.Equals(name, StringComparison.InvariantCultureIgnoreCase));
-            var atmsSmpl = atmsByCity.Select(a => new AtmSimplified()
+            catch (Exception ex)
             {
-                HouseNumber = a.Address.HouseNumber,
-                Street = a.Address.Street,
-                City = a.Address.City,
-                PostalCode = a.Address.PostalCode
-            });
-            
-            if (atms != null)
-            {
-                return (ActionResult)new OkObjectResult(atmsSmpl);
+                log.LogInformation(ex.Message);
+                return new BadRequestObjectResult(ex.Message);
+                throw;
             }
-            else
-            {
-                return new BadRequestObjectResult("no ATM locations found for the city");
-            }
-        }
-
-        private static async Task<string> GetResponseString(string url)
-        {
-            var httpClient = new HttpClient();
-
-            //var parameters = new Dictionary<string, string>();
-            //parameters["text"] = text;
-
-            //var response = await httpClient.PostAsync(url, new FormUrlEncodedContent(parameters));
-            var response = await httpClient.GetAsync(url);
-            var contents = await response.Content.ReadAsStringAsync();
-
-            return contents;
         }
     }
 }

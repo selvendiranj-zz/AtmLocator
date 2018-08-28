@@ -24,10 +24,10 @@ namespace AtmLocator.Fass
 
             try
             {
-                var filePath = FileHelper.GetFilePath(req, log);
+                var filePath = FileHelper.GetFilePath("wwwroot", req, log);
                 log.LogInformation("filePath: " + filePath);
-                var response = new HttpResponseMessage(HttpStatusCode.OK);
                 var stream = new FileStream(filePath, FileMode.Open);
+                var response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StreamContent(stream);
                 response.Content.Headers.ContentType = new MediaTypeHeaderValue(FileHelper.GetMimeType(filePath));
                 return response;

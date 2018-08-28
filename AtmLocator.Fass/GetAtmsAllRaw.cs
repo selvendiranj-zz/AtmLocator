@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System;
 
 namespace AtmLocator.Fass
 {
@@ -19,35 +20,32 @@ namespace AtmLocator.Fass
         [FunctionName("GetAtmsAllRaw")]
         public static IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req, ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            //string atms = File.ReadAllText("allATM.json");
-            string atms = GetResponseString("https://www.ing.nl/api/locator/atms/").Result;
-            atms = atms.Substring(5, atms.Length - 5);
-            var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
-            
-            if (atms != null)
+            try
             {
-                return (ActionResult)new OkObjectResult(allAtms);
+                log.LogInformation("C# HTTP trigger function processed a request.");
+
+                // pass empty staticFilesDir to access files from app root
+                string filePath = FileHelper.GetFilePath("", "allAtms.json", log);
+                log.LogInformation("filePath: " + filePath);
+                FileStream stream = new FileStream(filePath, FileMode.Open);
+                string atms = new StreamReader(stream).ReadToEnd();
+                var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
+
+                if (atms != null)
+                {
+                    return (ActionResult)new OkObjectResult(allAtms);
+                }
+                else
+                {
+                    return new BadRequestObjectResult("no ATM locations found for the bank");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return new BadRequestObjectResult("no ATM locations found for the bank");
+                log.LogInformation(ex.Message);
+                return new BadRequestObjectResult(ex.Message);
+                throw;
             }
-        }
-
-        private static async Task<string> GetResponseString(string url)
-        {
-            var httpClient = new HttpClient();
-
-            //var parameters = new Dictionary<string, string>();
-            //parameters["text"] = text;
-
-            //var response = await httpClient.PostAsync(url, new FormUrlEncodedContent(parameters));
-            var response = await httpClient.GetAsync(url);
-            var contents = await response.Content.ReadAsStringAsync();
-
-            return contents;
         }
     }
 }

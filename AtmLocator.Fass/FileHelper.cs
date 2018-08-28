@@ -22,8 +22,8 @@ namespace AtmLocator.Fass
                                     "index.html" : GetEnvironmentVariable("DEFAULT_PAGE");
         const EnvironmentVariableTarget ENV_HOME = EnvironmentVariableTarget.Process;
         const string APP_ROOT = @"site\wwwroot";
-        const string staticFilesFolder = "wwwroot";
         const string QUERY_PARAM = "file";
+        static string staticFilesDir = "";
 
         public static string GetScriptPath()
         {
@@ -35,15 +35,38 @@ namespace AtmLocator.Fass
             return System.Environment.GetEnvironmentVariable(name, ENV_HOME);
         }
 
-        public static string GetFilePath(HttpRequest req, ILogger log)
+        public static string GetFilePath(string staticFilesDir, HttpRequest req, ILogger log)
         {
-            string path = req.Query[QUERY_PARAM];
+            FileHelper.staticFilesDir = staticFilesDir;
+            string file = req.Query[QUERY_PARAM];
             string requestBody = new StreamReader(req.Body).ReadToEnd();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
-            path = path ?? data?.name;
+            file = file ?? data?.name;
 
-            var staticFilesPath = Path.GetFullPath(Path.Combine(GetScriptPath(), staticFilesFolder));
-            var fullPath = Path.GetFullPath(Path.Combine(staticFilesPath, path));
+            var staticFilesPath = Path.GetFullPath(Path.Combine(GetScriptPath(), FileHelper.staticFilesDir));
+            var fullPath = Path.GetFullPath(Path.Combine(staticFilesPath, file));
+
+            if (!IsInDirectory(staticFilesPath, fullPath))
+            {
+                throw new ArgumentException("Invalid path");
+            }
+
+            var isDirectory = Directory.Exists(fullPath);
+            if (isDirectory)
+            {
+                fullPath = Path.Combine(fullPath, defaultPage);
+            }
+
+            return fullPath;
+        }
+
+        public static string GetFilePath(string staticFilesDir, string fileName, ILogger log)
+        {
+            FileHelper.staticFilesDir = staticFilesDir;
+            string file = fileName;
+            
+            var staticFilesPath = Path.GetFullPath(Path.Combine(GetScriptPath(), FileHelper.staticFilesDir));
+            var fullPath = Path.GetFullPath(Path.Combine(staticFilesPath, file));
 
             if (!IsInDirectory(staticFilesPath, fullPath))
             {
@@ -81,6 +104,20 @@ namespace AtmLocator.Fass
         {
             var fileInfo = new FileInfo(filePath);
             return MimeTypeMap.GetMimeType(fileInfo.Extension);
+        }
+
+        public static async Task<string> GetResponseString(string url)
+        {
+            var httpClient = new HttpClient();
+
+            //var parameters = new Dictionary<string, string>();
+            //parameters["text"] = text;
+
+            //var response = await httpClient.PostAsync(url, new FormUrlEncodedContent(parameters));
+            var response = await httpClient.GetAsync(url);
+            var contents = await response.Content.ReadAsStringAsync();
+
+            return contents;
         }
     }
 }

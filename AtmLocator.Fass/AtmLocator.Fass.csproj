@@ -11,6 +11,9 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <None Update="allAtms.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="wwwroot\3rdpartylicenses.txt">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -34,6 +37,9 @@
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="wwwroot\main.093f22d37ba348a113bb.js">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="wwwroot\main.105d9074d5cee4ee558f.js">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="wwwroot\main.463ef2183b5228641d90.js">

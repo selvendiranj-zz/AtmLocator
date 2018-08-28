@@ -1,29 +1,29 @@
 export interface AtmLocation
 {
-    Address: AtmAddress;
-    Distance: number;
-    Type: string;
+    address: AtmAddress;
+    distance: number;
+    type: string;
 }
 
 interface AtmAddress
 {
-    Street: string;
-    HouseNumber: string;
-    PostalCode: string;
-    City: string;
-    GeoLocation: GeoLocation;
+    street: string;
+    houseNumber: string;
+    postalCode: string;
+    city: string;
+    geoLocation: GeoLocation;
 }
 
 interface GeoLocation
 {
-    Lat: number;
-    Lng: number;
+    lat: number;
+    lng: number;
 }
 
 export interface AtmSimplified
 {
-    Street: string;
-    HouseNumber: string;
-    PostalCode: string;
-    City: string;
+    street: string;
+    houseNumber: string;
+    postalCode: string;
+    city: string;
 }

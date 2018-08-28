@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AtmLocation } from './AtmLocation';
 
@@ -10,11 +10,13 @@ import { AtmLocation } from './AtmLocation';
 export class AppComponent implements AfterViewInit
 {
     title = 'atm-locator';
+    @ViewChild('mapcanvasfocused', { read: ElementRef })
+    mapcanvasfocused: ElementRef<any>;
     atmLocatorUrl = 'https://atmlocatorfunctionapp.azurewebsites.net/api/GetAtmsAllRaw';
-    atmLocsConst: any;
-    atmLocations: any;
-    atmLocation: any;
-    myLocation: any;
+    atmLocsConst: AtmLocation[];
+    atmLocations: AtmLocation[];
+    atmLocation: AtmLocation;
+    myPosition: any;
 
     inpCity = '';
     searchedCity = 'ATM Locations for all cities';
@@ -27,62 +29,59 @@ export class AppComponent implements AfterViewInit
     ngAfterViewInit(): void
     {
         this.http.get(this.atmLocatorUrl)
-            .subscribe((data: any) =>
+            .subscribe((data: AtmLocation[]) =>
             {
                 this.atmLocations = this.atmLocsConst = data;
             });
 
-        // The location of Uluru
-        const uluru = {
+        // The location of Toronto
+        const toronto = {
             lat: 43.6532,
             lng: -79.3832
         };
-        // The map, centered at Uluru
+        // The map, centered at Toronto
         const map = new google.maps.Map(document.getElementById('mapcanvas'), {
             zoom: 8,
-            center: uluru
+            center: toronto
         });
-        // The marker, positioned at Uluru
+        // The marker, positioned at Toronto
         const marker = new google.maps.Marker({
-            position: uluru,
+            position: toronto,
             map: map
         });
     }
 
-    public atmLocationSelected(atmLocation: any)
+    public atmLocationSelected(atmLocation: AtmLocation)
     {
         this.atmLocation = atmLocation;
-        // The location of Uluru
-        const uluru = {
+        // The selected location
+        const selPos = {
             lat: atmLocation.address.geoLocation.lat,
             lng: atmLocation.address.geoLocation.lng
         };
-        // The map, centered at Uluru
+        // The map, centered at selected location
         const map = new google.maps.Map(document.getElementById('mapcanvas'), {
             zoom: 5,
-            center: uluru
+            center: selPos
         });
-        // The marker, positioned at Uluru
+        // The marker, positioned at selected location
         const marker = new google.maps.Marker({
-            position: uluru,
-            map: map
+            position: selPos,
+            map: map,
+            title: 'Click to zoom'
+        });
+
+        marker.addListener('click', function ()
+        {
+            map.setZoom(7);
+            map.setCenter(marker.getPosition());
         });
     }
 
     public getDirections()
     {
-        let map: any;
-        let infoWindow: any;
         const that = this;
-
-        map = new google.maps.Map(document.getElementById('mapcanvas'), {
-            center: {
-                lat: that.atmLocations[that.atmLocations.length - 1].address.geoLocation.lat,
-                lng: that.atmLocations[that.atmLocations.length - 1].address.geoLocation.lng
-            },
-            zoom: 6
-        });
-        infoWindow = new google.maps.InfoWindow;
+        this.mapcanvasfocused.nativeElement.scrollTop += 20;
 
         // Try HTML5 geolocation.
         if (navigator.geolocation)
@@ -95,18 +94,25 @@ export class AppComponent implements AfterViewInit
                     lng: position.coords.longitude
                 };
 
-                // temp hardcoded to  nearest position
+                // TODO: remove - hardcoded to nearest position
+                const locCount = that.atmLocations.length;
                 myPos = {
-                    lat: that.atmLocations[2].address.geoLocation.lat,
-                    lng: that.atmLocations[2].address.geoLocation.lng
+                    lat: that.atmLocations[locCount - 1].address.geoLocation.lat,
+                    lng: that.atmLocations[locCount - 1].address.geoLocation.lng
                 };
-                that.myLocation = myPos;
+                // remove - hardcoded to nearest position
+
+                that.myPosition = myPos;
+
                 const selPos = {
                     lat: that.atmLocation.address.geoLocation.lat,
                     lng: that.atmLocation.address.geoLocation.lng
                 };
-                const url = `https://google.com/maps/dir/${selPos.lat},${selPos.lng}/${that.myLocation.lat},${that.myLocation.lng}`;
-                window.open(url);
+
+                // get source and current location and open map application
+                const saddr = `${selPos.lat},${selPos.lng}`;
+                const daddr = `${that.myPosition.lat},${that.myPosition.lng}`;
+                that.showDirections(saddr, daddr);
 
             }, this.getLocationError);
         } else
@@ -165,5 +171,70 @@ export class AppComponent implements AfterViewInit
                 });
             }
         }
+    }
+
+    public showDirections(saddr: string, daddr: string)
+    {
+        const directionsService = new google.maps.DirectionsService;
+        const directionsDisplay = new google.maps.DirectionsRenderer;
+        const myLatlng = { lat: 52.3702, lng: 4.8952 };
+        const map = new google.maps.Map(document.getElementById('mapcanvas'), {
+            zoom: 7,
+            center: myLatlng
+        });
+
+        const marker = new google.maps.Marker({
+            position: myLatlng,
+            map: map,
+            title: 'Click to zoom'
+        });
+
+        directionsDisplay.setMap(map);
+        this.calculateAndDisplayRoute(directionsService, directionsDisplay);
+
+        map.addListener('click', function ()
+        {
+            /* if we're on iOS, open in Apple Maps */
+            if ((navigator.platform.indexOf('iPhone') !== -1) ||
+                (navigator.platform.indexOf('iPod') !== -1) ||
+                (navigator.platform.indexOf('iPad') !== -1))
+            {
+                window.open(`maps://maps.google.com/maps?saddr=${saddr}&daddr=${daddr}`);
+            }
+
+            else /* else use Google */
+            {
+                window.open(`https://maps.google.com/maps?saddr=${saddr}&daddr=${daddr}`);
+            }
+        });
+
+    }
+
+    public calculateAndDisplayRoute(directionsService, directionsDisplay)
+    {
+        const selPos = {
+            lat: this.atmLocation.address.geoLocation.lat,
+            lng: this.atmLocation.address.geoLocation.lng
+        };
+
+        const myPos = {
+            lat: this.myPosition.lat,
+            lng: this.myPosition.lng
+        };
+
+        directionsService.route({
+            origin: myPos,
+            destination: selPos,
+            travelMode: 'DRIVING'
+        }, function (response, status)
+            {
+                if (status === 'OK')
+                {
+                    directionsDisplay.setDirections(response);
+                } else
+                {
+                    window.alert('Directions request failed due to ' + status);
+                }
+            });
     }
 }
