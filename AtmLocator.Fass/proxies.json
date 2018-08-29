@@ -2,12 +2,14 @@
     "proxies": {
         "files": {
             "matchCondition": {
+                "methods": [ "GET" ],
                 "route": "{*path}"
             },
             "backendUri": "https://atmlocatorfunctionapp.azurewebsites.net/api/StaticFileServer?file={path}"
         },
         "api": {
             "matchCondition": {
+                "methods": [ "GET" ],
                 "route": "/api/{*path}"
             },
             "backendUri": "https://atmlocatorfunctionapp.azurewebsites.net/api/{path}"
