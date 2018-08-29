@@ -37,8 +37,15 @@ namespace AtmLocator.Fass
                 // pass empty staticFilesDir to access files from app root
                 string filePath = FileHelper.GetFilePath("", "allAtms.json", log);
                 log.LogInformation("filePath: " + filePath);
-                FileStream stream = new FileStream(filePath, FileMode.Open);
-                string atms = new StreamReader(stream).ReadToEnd();
+                // allAtms.json file reading START
+                string atms;
+                using (FileStream stream = new FileStream(filePath, FileMode.Open))
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        atms = reader.ReadToEnd();
+                    }
+                } // allAtms.json file reading END
                 var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
                 var atmsByCity = allAtms.Where(l => l.Address.City.Equals(name, StringComparison.InvariantCultureIgnoreCase));
                 var atmsSmpl = atmsByCity.Select(a => new AtmSimplified()
