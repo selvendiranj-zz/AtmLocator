@@ -2,16 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Host;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
-using System.Net;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace AtmLocator.Fass
@@ -22,8 +13,7 @@ namespace AtmLocator.Fass
                                     "index.html" : GetEnvironmentVariable("DEFAULT_PAGE");
         const EnvironmentVariableTarget ENV_HOME = EnvironmentVariableTarget.Process;
         const string APP_ROOT = @"site\wwwroot";
-        const string QUERY_PARAM = "file";
-        static string staticFilesDir = "";
+        static string staticFilesDir = string.Empty;
 
         public static string GetScriptPath()
         {
@@ -35,32 +25,7 @@ namespace AtmLocator.Fass
             return System.Environment.GetEnvironmentVariable(name, ENV_HOME);
         }
 
-        public static string GetFilePath(string staticFilesDir, HttpRequest req, ILogger log)
-        {
-            FileHelper.staticFilesDir = staticFilesDir;
-            string file = req.Query[QUERY_PARAM];
-            string requestBody = new StreamReader(req.Body).ReadToEnd();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            file = file ?? data?.name;
-
-            var staticFilesPath = Path.GetFullPath(Path.Combine(GetScriptPath(), FileHelper.staticFilesDir));
-            var fullPath = Path.GetFullPath(Path.Combine(staticFilesPath, file));
-
-            if (!IsInDirectory(staticFilesPath, fullPath))
-            {
-                throw new ArgumentException("Invalid path");
-            }
-
-            var isDirectory = Directory.Exists(fullPath);
-            if (isDirectory)
-            {
-                fullPath = Path.Combine(fullPath, defaultPage);
-            }
-
-            return fullPath;
-        }
-
-        public static string GetFilePath(string staticFilesDir, string fileName, ILogger log)
+        public static string GetFilePath(string staticFilesDir, string fileName)
         {
             FileHelper.staticFilesDir = staticFilesDir;
             string file = fileName;

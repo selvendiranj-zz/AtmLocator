@@ -20,8 +20,9 @@ namespace AtmLocator.Fass
         {
             try
             {
-                var filePath = FileHelper.GetFilePath("wwwroot", "index.html", log);
+                var filePath = FileHelper.GetFilePath("wwwroot", "index.html");
                 log.LogInformation("filePath: " + filePath);
+
                 var stream = new FileStream(filePath, FileMode.Open);
                 var response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StreamContent(stream);

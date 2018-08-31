@@ -24,18 +24,10 @@ namespace AtmLocator.Fass
             {
                 log.LogInformation("C# HTTP trigger function processed a request.");
 
-                string name = req.Query["name"];
-
-                string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
-                name = name ?? data?.name;
-                if (name == null)
-                {
-                    return new BadRequestObjectResult("Please pass a city name {name} on the query string or in the request body");
-                }
+                var cityName = RequestHelper.GetParamValue("name", req);
 
                 // pass empty staticFilesDir to access files from app root
-                string filePath = FileHelper.GetFilePath("", "allAtms.json", log);
+                string filePath = FileHelper.GetFilePath("", "allAtms.json");
                 log.LogInformation("filePath: " + filePath);
                 // allAtms.json file reading START
                 string atms;
@@ -47,7 +39,7 @@ namespace AtmLocator.Fass
                     }
                 } // allAtms.json file reading END
                 var allAtms = JsonConvert.DeserializeObject<List<AtmLocation>>(atms);
-                var atmsByCity = allAtms.Where(l => l.Address.City.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+                var atmsByCity = allAtms.Where(l => l.Address.City.Equals(cityName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (atms != null)
                 {

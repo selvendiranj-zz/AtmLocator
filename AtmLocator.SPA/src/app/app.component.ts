@@ -13,7 +13,7 @@ export class AppComponent implements AfterViewInit
     @ViewChild('mapcanvasfocused', { read: ElementRef })
     mapcanvasfocused: ElementRef<any>;
     atmLocatorUrl = 'https://atmlocatorfunctionapp.azurewebsites.net/api/GetAtmsAllRaw';
-    atmLocsConst: AtmLocation[];
+    atmLocatorByCityUrl = 'https://atmlocatorfunctionapp.azurewebsites.net/api/GetAtmsByCityRaw';
     atmLocations: AtmLocation[];
     atmLocation: AtmLocation;
     myPosition: any;
@@ -28,27 +28,7 @@ export class AppComponent implements AfterViewInit
 
     ngAfterViewInit(): void
     {
-        this.http.get(this.atmLocatorUrl)
-            .subscribe((data: AtmLocation[]) =>
-            {
-                this.atmLocations = this.atmLocsConst = data;
-            });
-
-        // The location of Toronto
-        const toronto = {
-            lat: 43.6532,
-            lng: -79.3832
-        };
-        // The map, centered at Toronto
-        const map = new google.maps.Map(document.getElementById('mapcanvas'), {
-            zoom: 8,
-            center: toronto
-        });
-        // The marker, positioned at Toronto
-        const marker = new google.maps.Marker({
-            position: toronto,
-            map: map
-        });
+        this.searchCity();
     }
 
     public atmLocationSelected(atmLocation: AtmLocation)
@@ -132,15 +112,38 @@ export class AppComponent implements AfterViewInit
     {
         if (this.inpCity === '')
         {
-            this.atmLocations = this.atmLocsConst;
+            this.http.get(this.atmLocatorUrl)
+                .subscribe((data: AtmLocation[]) =>
+                {
+                    this.atmLocations = data;
+                });
+
+            // The location of Toronto
+            const toronto = {
+                lat: 43.6532,
+                lng: -79.3832
+            };
+            // The map, centered at Toronto
+            const map = new google.maps.Map(document.getElementById('mapcanvas'), {
+                zoom: 8,
+                center: toronto
+            });
+            // The marker, positioned at Toronto
+            const marker = new google.maps.Marker({
+                position: toronto,
+                map: map
+            });
         }
         else
         {
-            this.searchedCity = 'ATM Locations for city ' + this.inpCity;
-            const locations = this.atmLocsConst.filter(
-                loc => loc.address.city === this.inpCity);
-            this.atmLocations = locations;
+            this.searchedCity = `ATM Locations for city ${this.inpCity}`;
+            const url = `${this.atmLocatorByCityUrl}?name=${this.inpCity}`;
+            this.http.get(url).subscribe((data: AtmLocation[]) =>
+            {
+                this.atmLocations = data;
+            });
 
+            const locations = this.atmLocations;
             if (locations.length === 0)
             {
                 this.searchedCity = 'No ATM found in the searched city';

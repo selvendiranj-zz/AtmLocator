@@ -27,7 +27,7 @@ namespace AtmLocator.Fass
             try
             {
                 // pass empty staticFilesDir to access files from app root
-                string filePath = FileHelper.GetFilePath("", "allAtms.json", log);
+                string filePath = FileHelper.GetFilePath("", "allAtms.json");
                 log.LogInformation("filePath: " + filePath);
                 // allAtms.json file reading START
                 string atms;
