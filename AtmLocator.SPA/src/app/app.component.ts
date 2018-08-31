@@ -41,7 +41,7 @@ export class AppComponent implements AfterViewInit
         };
         // The map, centered at selected location
         const map = new google.maps.Map(document.getElementById('mapcanvas'), {
-            zoom: 5,
+            zoom: 10,
             center: selPos
         });
         // The marker, positioned at selected location
@@ -125,7 +125,7 @@ export class AppComponent implements AfterViewInit
             };
             // The map, centered at Toronto
             const map = new google.maps.Map(document.getElementById('mapcanvas'), {
-                zoom: 8,
+                zoom: 10,
                 center: toronto
             });
             // The marker, positioned at Toronto
@@ -141,9 +141,8 @@ export class AppComponent implements AfterViewInit
             this.http.get(url).subscribe((data: AtmLocation[]) =>
             {
                 this.atmLocations = data;
-            });
+                const locations = this.atmLocations;
 
-            const locations = this.atmLocations;
             if (locations.length === 0)
             {
                 this.searchedCity = 'No ATM found in the searched city';
@@ -173,6 +172,7 @@ export class AppComponent implements AfterViewInit
                     map: map
                 });
             }
+            });
         }
     }
 
